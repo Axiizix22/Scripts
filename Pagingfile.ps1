@@ -1,13 +1,13 @@
-#Get LogicDisks for machine with Temporary Disks
-$LogicalDisks = Get-WmiObject Win32_LogicalDisk | Where-Object VolumeName -EQ 'Windows'
+# Désactiver la gestion manuelle du pagefile et activer la gestion automatique par Windows
+Try {
+    $ComputerSystem = Get-WmiObject -Class Win32_ComputerSystem -EnableAllPrivileges
+    $ComputerSystem.AutomaticManagedPagefile = $true
+    $ComputerSystem.Put()
 
-#Set Pagefile on Windows disk if exists
-If ($LogicalDisks){
-    
-    Write-Host "Setting PageFile on $($LogicalDisks.DeviceID)"
-    $pagefileset = Get-WmiObject win32_pagefilesetting | Where-Object{$_.caption -like "$($LogicalDisks.DeviceID)*"}
-    $pagefileset.InitialSize = 6144
-    $pagefileset.MaximumSize = 24576
-    $pagefileset.Put() | Out-Null
-
+    Write-Host "La gestion automatique du fichier d'échange a été activée avec succès."
+} Catch {
+    Write-Host "Erreur : $_"
 }
+
+# Redémarrer pour appliquer les changements
+Write-Host "Un redémarrage est nécessaire pour appliquer les modifications."
